@@ -7,3 +7,12 @@ spring:
       project-id: learning-messaging
       credentials:
         location: classpath:key.json
+
+---
+
+spring:
+  profiles: local
+  cloud:
+    gcp:
+      pubsub:
+        emulator-host: localhost:8085

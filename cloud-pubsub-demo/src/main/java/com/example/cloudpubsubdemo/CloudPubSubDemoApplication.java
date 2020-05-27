@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
@@ -33,13 +34,21 @@ public class CloudPubSubDemoApplication {
     @RestController
     static class MessageController {
 
-        private static final String TOPIC = "greetings";
+        private static final String TOPIC = "p";
         private static final String MEASUREMENTS_TOPIC = "measurements";
         private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
-        private final PubSubTemplate pubSubTemplate;
 
-        public MessageController(PubSubTemplate pubSubTemplate) {
+        private final PubSubTemplate pubSubTemplate;
+        private final PubSubAdmin pubSubAdmin;
+
+        public MessageController(PubSubTemplate pubSubTemplate, PubSubAdmin pubSubAdmin) {
             this.pubSubTemplate = pubSubTemplate;
+            this.pubSubAdmin = pubSubAdmin;
+        }
+
+        @PostMapping("/topics")
+        public void createTopic(@RequestParam("topicName") String topicName) {
+            pubSubAdmin.createTopic(topicName);
         }
 
         @PostMapping("/messages")

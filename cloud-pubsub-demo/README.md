@@ -67,8 +67,27 @@ replicaset.apps/cloud-pubsub-demo-deployment-5df5f687bd   3         3         3 
 ```
 
 Testing
-
 ```bash
-echo hello | http post :30001
+echo hello | http post :30001/messags
 ```
 
+
+## Cloud PubSub
+
+Testing locally after starting the application..
+
+```bash
+$ echo hello | http post :8080/messages
+```
+
+```bash
+$ gcloud pubsub subscriptions pull demo-subscription
+```
+
+```bash
+┌───────┬──────────────────┬────────────┬──────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  DATA │    MESSAGE_ID    │ ATTRIBUTES │ DELIVERY_ATTEMPT │                                                                                           ACK_ID                                                                                           │
+├───────┼──────────────────┼────────────┼──────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ hello │ 1169749855281299 │            │                  │ IT4wPkVTRFAGFixdRkhRNxkIaFEOT14jPzUgKEUSCQpPAihdeTFYPkFVcWhRDRlyfWByaF8WCAUQWiwJURsHaE5tdSVxDBh0dGZxY1IWBABNUnxWUjPb3O6BpMDoPwNOReq94pwmIfPxi81tZiU9XhJLLD5-IDBFQV5AEkwrBURJUytDCypYEU4EIQ │
+└───────┴──────────────────┴────────────┴──────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```

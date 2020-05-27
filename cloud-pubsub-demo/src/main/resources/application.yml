@@ -1,3 +1,9 @@
 spring:
   application:
     name: cloud-pubsub-demo
+
+  cloud:
+    gcp:
+      project-id: learning-messaging
+      credentials:
+        location: classpath:key.json

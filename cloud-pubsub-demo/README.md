@@ -122,6 +122,12 @@ $ echo '{"deviceId":"12345", "temperature": 25.15}'  | http post :8080/measureme
 
 You won't get the messages if the subscription is created after the message was published to the topic.
 
+### Subscription
+
+```bash
+http :8080/messages\?subscription=messages-subscription\&maxMessages=10
+```
+
 
 # Separate subscriber from publisher (use separate service accounts)
 How to externalise the service account and use it a secret when running on GKE?

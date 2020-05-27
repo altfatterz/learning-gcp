@@ -6,15 +6,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class CloudPubSubDemoApplication {
@@ -43,8 +45,29 @@ public class CloudPubSubDemoApplication {
         @PostMapping("/messages")
         public String sendMessage(@RequestBody String message) {
             logger.info("Message received: {}", message);
-            pubSubTemplate.publish(TOPIC, message);
+            pubSubTemplate.publish(TOPIC, message.trim());
             return "Your message was published asynchronously, status is unknown";
+        }
+
+        @GetMapping("/messages")
+        public List<String> pull(@RequestParam("subscription") String subscription,
+                                 @RequestParam("maxMessages") Integer maxMessages) {
+            List<AcknowledgeablePubsubMessage> messages = pubSubTemplate.pull(subscription, maxMessages, true);
+            List<String> result = messages.stream()
+                    .map(acknowledgeablePubsubMessage ->
+                            acknowledgeablePubsubMessage.getPubsubMessage().getData().toStringUtf8())
+                    .collect(Collectors.toList());
+
+            try {
+                if (!messages.isEmpty()){
+                    pubSubTemplate.ack(messages).get();
+                }
+            } catch (Exception e) {
+                logger.error("Acking failed", e);
+                return Collections.emptyList();
+            }
+
+            return result;
         }
 
         @PostMapping("/measurements")

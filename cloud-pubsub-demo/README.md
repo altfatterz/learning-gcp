@@ -91,3 +91,41 @@ $ gcloud pubsub subscriptions pull demo-subscription
 │ hello │ 1169749855281299 │            │                  │ IT4wPkVTRFAGFixdRkhRNxkIaFEOT14jPzUgKEUSCQpPAihdeTFYPkFVcWhRDRlyfWByaF8WCAUQWiwJURsHaE5tdSVxDBh0dGZxY1IWBABNUnxWUjPb3O6BpMDoPwNOReq94pwmIfPxi81tZiU9XhJLLD5-IDBFQV5AEkwrBURJUytDCypYEU4EIQ │
 └───────┴──────────────────┴────────────┴──────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+If it is not acknowledged that it will be redelivered with the subscription.
+
+```bash
+$ gcloud pubsub subscriptions pull --auto-ack demo-subscription
+┌───────┬──────────────────┬────────────┬──────────────────┐
+│  DATA │    MESSAGE_ID    │ ATTRIBUTES │ DELIVERY_ATTEMPT │
+├───────┼──────────────────┼────────────┼──────────────────┤
+│ hello │ 1169749855281299 │            │                  │
+└───────┴──────────────────┴────────────┴──────────────────┘
+$ gcloud pubsub subscriptions pull --auto-ack demo-subscription
+Listed 0 items.
+```
+
+`GcpPubSubAutoConfiguration` for auto configuration. 
+
+### JSON support
+
+We configure a `PubSubMessageConverter` Here we rely on the ObjectMapper provided by Spring Boot.
+
+@Bean
+public PubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
+    return new JacksonPubSubMessageConverter(objectMapper);
+}
+
+```bash
+$ echo '{"deviceId":"12345", "temperature": 25.15}'  | http post :8080/measurements
+``` 
+
+You won't get the messages if the subscription is created after the message was published to the topic.
+
+
+# Separate subscriber from publisher (use separate service accounts)
+How to externalise the service account and use it a secret when running on GKE?
+
+
+
+

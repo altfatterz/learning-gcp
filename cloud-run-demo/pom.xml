@@ -52,6 +52,9 @@
                 <configuration>
                     <container>
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+<!--                        <args>-->
+<!--                            <arg>&#45;&#45;server.port=${PORT}</arg>-->
+<!--                        </args>-->
                     </container>
                 </configuration>
             </plugin>

@@ -122,10 +122,34 @@ $ echo '{"deviceId":"12345", "temperature": 25.15}'  | http post :8080/measureme
 
 You won't get the messages if the subscription is created after the message was published to the topic.
 
-### Subscription
+### Pull Subscription
 
 ```bash
 http :8080/messages\?subscription=messages-subscription\&maxMessages=10
+```
+
+### Push Subscription
+
+Create a push type subscription
+
+```bash
+$ gcloud pubsub subscriptions create messages-push-subscription \ 
+    --topic greetings \ 
+    --push-endpoint=https://cloud-run-demo-udypuxt5sq-ew.a.run.app/messages
+```
+
+Publish a message
+
+```bash
+$ gcloud pubsub topics publish greetings --message=hi
+messageIds:
+- '1171600321957004'
+```
+
+Check the logs of the Cloud Run service
+
+```bash
+Processed message {"message":{"data":"aGk=","messageId":"1171600321957004","message_id":"1171600321957004","publishTime":"2020-05-28T14:06:46.417Z","publish_time":"2020-05-28T14:06:46.417Z"},"subscription":"projects/learning-messaging/subscriptions/messages-push-subscription"}
 ```
 
 

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: cloud-sql-demo
+
+  # Set to the Postgres user you want to connect to; 'postgres' is the default user.
+  datasource:
+    username: postgres
+    password: postgres
+    # So app starts despite "table already exists" errors.
+    continue-on-error: true
+    # Enforces database initialization
+    initialization-mode: always
+
+  cloud.gcp:
+    project-id:
+    credentials.location: file:/Users/zoal/Downloads/spring-boot-on-gcp-272521-ce538182844a.json
+
+    sql:
+      database-name: postgres
+      # This value is formatted in the form: [gcp-project-id]:[region]:[instance-name]
+      instance-connection-name: spring-boot-on-gcp-272521:europe-west6:customers-db
+
+
+

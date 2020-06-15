@@ -14,7 +14,9 @@
         <module>cloud-run-demo</module>
         <module>cloud-pubsub-demo</module>
 
-        <module>cloud-function-demos/cloud-function-with-functions-framework</module>
+        <module>cloud-function-demos/http-with-functions-framework</module>
+        <module>cloud-function-demos/pubsub-with-functions-framework</module>
+        <module>cloud-function-demos/gcs-with-functions-framework</module>
     </modules>
 
 </project>

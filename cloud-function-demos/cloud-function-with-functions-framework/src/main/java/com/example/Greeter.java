@@ -10,17 +10,8 @@ import java.util.Optional;
 public class Greeter implements HttpFunction {
 
     @Override
-    public void service(HttpRequest httpRequest,
-                        HttpResponse httpResponse) throws Exception {
-        BufferedWriter writer = httpResponse.getWriter();
-
-        Optional<String> name = httpRequest.getFirstQueryParameter("name");
-        if (name.isPresent()) {
-            writer.write("Hello " + name.get() + "!");
-        } else {
-            writer.write("Hello World!");
-        }
-
-
+    public void service(HttpRequest req, HttpResponse res) throws Exception {
+        Optional<String> name = req.getFirstQueryParameter("name");
+        res.getWriter().write("Hello " + name.orElse("World!"));
     }
 }

@@ -5,8 +5,8 @@
 - can be `enabled` or `disabled`
 
 `Service Account` 
-- An identity that a compute-instance or an application can use to run API requests on your behalf.
-- Users can also impersonate service accounts, allowing multiple users to access everything that a service account can access.  
+- An identity that a `compute-instance` or an `application` can use to run API requests on your behalf.
+- Users can also `impersonate service accounts`, allowing multiple users to access everything that a service account can access.  
 - Has an assigned email
 - Can only be authenticated with a private-public RSA key pair
 - Can't be logged in via a browser
@@ -95,6 +95,177 @@ When you look into a project's IAM policy take note on the accounts which have r
 - `Service Account Key Admin`
 
 In addition to the project's IAM policy there is an IAM policy for each service account in your project.
+
+Service Account Roles:
+- `roles/iam.serviceAccountCreator`
+
+- `roles/iam.serviceAccountDeleter`
+
+- `roles/iam.serviceAccountUser`  
+    - Run operations as the service account.
+
+- `roles/iam.serviceAccountAdmin` 
+    - Create and manage service accounts, even update their iam policy
+    - User of this role can delegate access service accounts to other users
+
+- `roles/iam.serviceAccountKeyAdmin`
+    - Users of this role will be able to create, update and delete service account keys.
+    - These keys can be used by other users to run commands as a corresponding service account
+
+- `roles/iam.serviceAccountTokenCreator`
+    - With this role a user is able to use the impersonate-service-account flag to run gcloud commands as a specified service account
+    - This impersonation does not require any private key and is considered a safer alternative
+    
+Service accounts aren't just accounts they are also considered as resources with an attached IAM policy.
+```bash
+$ gcloud iam service-accounts get-iam-policy SERVICE_ACCOUNT 
+```
+A user can have indirect access to a service account through another service account.
+
+1. Service account keys
+
+```bash
+$ gcloud iam service-accounts keys create OUTPUT_PRIVATE_KEY_FILE --iam-account=SERVICE_ACCOUNT  // google generate for you
+$ gcloud iam service-accounts keys upload PUBLIC_KEY_FILE --iam-account=SERVICE_ACCOUNT          // upload your own
+$ gcloud iam service-accounts keys list --iam-account=SERVICE_ACCOUNT                            // list keys for a given service account
+$ gcloud iam service-accounts keys delete KEY_ID --iam-account=SERVICE_ACCOUNT                   // delete a key for a given service account  
+```
+
+
+2. Short-lived service account credentials
+- limited lifetime of a few hours
+- less risk than a service account keys
+
+A user with `Service Account Token Creator Role` on a service account will be able to take advantage on short-lived credentials.
+- They can generated an OAuth2 Access Token for the service account to access Google Cloud API as the service account
+- Additionally a user of this role can use the `--impersonate-service-account` on any gcloud command to run it as a service account, without requiring keys.
+
+`Service Accounts in Action`
+
+1. First example
+
+```bash
+The user does not have access to service account 'bucket-admin@service-accounts-demo-310307.iam.gserviceaccount.com'. User: 'johndoe@cloudnativecoach.com'. 
+Ask a project owner to grant you the iam.serviceAccountUser role on the service account
+```
+
+Get the IAM policy for the project:
+
+```bash
+$ gcloud projects get-iam-policy service-accounts-demo-310307
+```
+
+Get the IAM policy for the given service account:
+
+```bash
+$ gcloud iam service-accounts get-iam-policy bucket-admin@service-accounts-demo-310307.iam.gserviceaccount.com
+```
+
+```bash
+$ gcloud iam service-accounts add-iam-policy-binding bucket-admin@service-accounts-demo-310307.iam.gserviceaccount.com \
+--member=user:johndoe@cloudnativecoach.com \
+--role=roles/iam.serviceAccountUser
+
+Updated IAM policy for serviceAccount [bucket-admin@service-accounts-demo-310307.iam.gserviceaccount.com].
+bindings:
+- members:
+  - user:johndoe@cloudnativecoach.com
+  role: roles/iam.serviceAccountUser
+etag: BwW_ndIgGxY=
+version: 1
+```
+
+We can also the the policy binding on the project level, but then it will apply to all service accounts in the project:
+
+```bash
+$ gcloud projects add-iam-policy-binding service-accounts-demo-310307 --member=user:johndoe@cloudnativecoach.com --role=roles/iam.serviceAccountUser
+```
+
+To remove policy binding use:
+
+```bash
+$ gcloud projects remove-iam-policy-binding service-accounts-demo-310307 --member=user:johndoe@cloudnativecoach.com --role=roles/iam.serviceAccountUser
+```
+
+2. Example
+
+```bash
+$ gcloud iam service-accounts add-iam-policy-binding sql-admin@service-accounts-demo-310307.iam.gserviceaccount.com \
+--member=user:janedoe@cloudnativecoach.com \
+--role=roles/iam.serviceAccountKeyAdmin
+```
+
+```bash
+$ gcloud iam service-accounts get-iam-policy sql-admin@service-accounts-demo-310307.iam.gserviceaccount.com
+```
+
+Run it as `janedoe@cloudnativecoach.com`, here you don't have permission:
+
+```bash
+$ gcloud iam service-accounts keys create key.json --iam-account=bucket-admin@service-accounts-demo-310307.iam.gserviceaccount.com
+ERROR: (gcloud.iam.service-accounts.keys.create) PERMISSION_DENIED: Permission iam.serviceAccountKeys.create is required to perform this operation on service account projects/-/serviceAccounts/bucket-admin@service-accounts-demo-310307.iam.gserviceaccount.com.
+```
+
+Run it as `janedoe@cloudnativecoach.com`, this should work:
+
+```bash
+$ gcloud iam service-accounts keys create key.json --iam-account=sql-admin@service-accounts-demo-310307.iam.gserviceaccount.com
+created key [41e96e1438343a5d4698f965f281976d8e315b74] of type [json] as [key.json] for [sql-admin@service-accounts-demo-310307.iam.gserviceaccount.com]
+$ gcloud iam service-accounts keys list --iam-account=sql-admin@service-accounts-demo-310307.iam.gserviceaccount.com
+
+KEY_ID                                    CREATED_AT            EXPIRES_AT
+41e96e1438343a5d4698f965f281976d8e315b74  2021-04-10T19:31:40Z  9999-12-31T23:59:59Z
+58e542d28cc38045e262002af2cc6eace1752f97  2021-04-10T12:44:48Z  2023-04-11T19:22:42Z
+```
+
+```bash
+$ gcloud sql instances create new-sql-instance --region=europe-west6
+ERROR: (gcloud.sql.instances.create) User [janedoe@cloudnativecoach.com] does not have permission to access projects instance [service-accounts-demo-310307] (or it may not exist): The client is not authorized to make this request.
+```
+
+```bash
+$ gcloud auth activate-service-account sql-admin@service-accounts-demo-310307.iam.gserviceaccount.com --key-file=key.json
+Activated service account credentials for: [sql-admin@service-accounts-demo-310307.iam.gserviceaccount.com]
+$ gcloud auth list
+                        Credentialed Accounts
+ACTIVE  ACCOUNT
+        janedoe@cloudnativecoach.com
+*       sql-admin@service-accounts-demo-310307.iam.gserviceaccount.com
+```
+
+```bash
+$ gcloud sql instances create new-sql-instance --region=europe-west6
+Creating Cloud SQL instance...done.
+Created [https://sqladmin.googleapis.com/sql/v1beta4/projects/service-accounts-demo-310307/instances/new-sql-instance].
+NAME              DATABASE_VERSION  LOCATION        TIER              PRIMARY_ADDRESS  PRIVATE_ADDRESS  STATUS
+new-sql-instance  MYSQL_5_7         europe-west6-a  db-n1-standard-1  34.65.115.32     -                RUNNABLE
+```
+
+3. example
+
+```bash
+$ gcloud iam service-accounts add-iam-policy-binding redis-admin@service-accounts-demo-310307.iam.gserviceaccount.com \
+--member=user:babydoe@cloudnativecoach.com \
+--role=roles/iam.serviceAccountTokenCreator
+```
+
+```bash
+$ gcloud iam service-accounts get-iam-policy redis-admin@service-accounts-demo-310307.iam.gserviceaccount.com 
+```
+
+Run as `babyjoe@cloudnativecoach.com`
+
+```bash
+$ gcloud redis instances create new-redis-instance --region=europe-west6
+ERROR: (gcloud.redis.instances.create) PERMISSION_DENIED: Permission 'redis.instances.create' denied on 'projects/service-accounts-demo-310307/locations/europe-west6/instances/new-redis-instance'
+```
+
+For the demo show the usecase to delete the database instead. 
+
+
+
+
+
 
 
 

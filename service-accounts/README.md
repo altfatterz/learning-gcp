@@ -71,7 +71,7 @@ Creating service accounts:
 - by default it will have no roles assigned to them 
 - include a descriptive display name and description, to describe the purpose of the service account
 ```bash
-$ gcloud iam service-account create NAME 
+$ gcloud iam service-accounts create NAME 
 --display-name 'DISPLAY_NAME'
 --description 'DESCRIPTION'
 ```
@@ -88,21 +88,17 @@ $ gcloud iam service-account enable <SERVICE-ACCOUNT>
 $ gcloud iam service-account disable <SERVICE-ACCOUNT>
 ```
 
-It is also important who has access to the service accounts.
-When you look into a project's IAM policy take note on the accounts which have roles associated with managing or using service accounts
-- `Service Account Token Creator`
-- `Service Account Admin`
-- `Service Account Key Admin`
-
 In addition to the project's IAM policy there is an IAM policy for each service account in your project.
 
 Service Account Roles:
 - `roles/iam.serviceAccountCreator`
+    - Access to create service accounts.
 
 - `roles/iam.serviceAccountDeleter`
-
+    -  Access to delete service accounts.
+  
 - `roles/iam.serviceAccountUser`  
-    - Run operations as the service account.
+    -  Run operations as the service account.
 
 - `roles/iam.serviceAccountAdmin` 
     - Create and manage service accounts, even update their iam policy
@@ -117,6 +113,7 @@ Service Account Roles:
     - This impersonation does not require any private key and is considered a safer alternative
     
 Service accounts aren't just accounts they are also considered as resources with an attached IAM policy.
+
 ```bash
 $ gcloud iam service-accounts get-iam-policy SERVICE_ACCOUNT 
 ```
@@ -131,7 +128,6 @@ $ gcloud iam service-accounts keys list --iam-account=SERVICE_ACCOUNT           
 $ gcloud iam service-accounts keys delete KEY_ID --iam-account=SERVICE_ACCOUNT                   // delete a key for a given service account  
 ```
 
-
 2. Short-lived service account credentials
 - limited lifetime of a few hours
 - less risk than a service account keys
@@ -140,13 +136,14 @@ A user with `Service Account Token Creator Role` on a service account will be ab
 - They can generated an OAuth2 Access Token for the service account to access Google Cloud API as the service account
 - Additionally a user of this role can use the `--impersonate-service-account` on any gcloud command to run it as a service account, without requiring keys.
 
-`Service Accounts in Action`
 
 1. First example
-
+   
+`roles/iam.serviceAccountUser` - Run operations as the service account.
+   
 ```bash
 The user does not have access to service account 'bucket-admin@service-accounts-demo-310307.iam.gserviceaccount.com'. User: 'johndoe@cloudnativecoach.com'. 
-Ask a project owner to grant you the iam.serviceAccountUser role on the service account
+Ask a project owner to grant you the `iam.serviceAccountUser` role on the service account
 ```
 
 Get the IAM policy for the project:
@@ -259,8 +256,6 @@ Run as `babyjoe@cloudnativecoach.com`
 $ gcloud redis instances create new-redis-instance --region=europe-west6
 ERROR: (gcloud.redis.instances.create) PERMISSION_DENIED: Permission 'redis.instances.create' denied on 'projects/service-accounts-demo-310307/locations/europe-west6/instances/new-redis-instance'
 ```
-
-For the demo show the usecase to delete the database instead. 
 
 
 

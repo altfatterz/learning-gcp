@@ -257,7 +257,9 @@ $ gcloud redis instances create new-redis-instance --region=europe-west6
 ERROR: (gcloud.redis.instances.create) PERMISSION_DENIED: Permission 'redis.instances.create' denied on 'projects/service-accounts-demo-310307/locations/europe-west6/instances/new-redis-instance'
 ```
 
-
+```bash
+$ gcloud redis instances create new-redis-instance --region=europe-west6 --impersonate-service-account=redis-admin@service-accounts-demo-310307.iam.gserviceaccount.com
+```
 
 
 

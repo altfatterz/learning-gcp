@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.example</groupId>
-    <artifactId>cloud-function-with-functions-framework</artifactId>
+    <artifactId>http-with-functions-framework</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <functions-framework-api.version>1.0.1</functions-framework-api.version>
+        <functions-framework-api.version>1.0.4</functions-framework-api.version>
     </properties>
 
     <dependencies>
@@ -25,12 +25,13 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13</version>
+            <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.3.3</version>
+            <version>3.12.4</version>
             <scope>test</scope>
         </dependency>
 
